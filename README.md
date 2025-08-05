@@ -1,6 +1,3 @@
-<<<<<<< HEAD
-# ipv6-monitor-plus
-=======
 # Docker Chromium Base
 
 > 🚀 精简的 Chromium 基础镜像，专为容器化应用设计，支持快速部署 Puppeteer、截图、PDF 生成等服务
