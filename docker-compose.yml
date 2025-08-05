@@ -1,0 +1,213 @@
+version: '3.8'
+
+# 完整的 Docker Chromium Base 项目
+# 包含基础镜像和所有示例服务
+
+services:
+  # Puppeteer API 服务
+  puppeteer-api:
+    build: 
+      context: ./examples/puppeteer
+      dockerfile: Dockerfile
+      platform: linux/amd64
+    image: puppeteer-chromium:latest
+    container_name: puppeteer-api
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "healthcheck.js"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.0'
+        reservations:
+          memory: 512M
+          cpus: '0.5'
+    security_opt:
+      - no-new-privileges:true
+    shm_size: 2gb
+    networks:
+      - chromium-network
+    depends_on:
+      - chromium-base
+
+  # 截图服务
+  screenshot-service:
+    build: 
+      context: ./examples/simple-screenshot
+      dockerfile: Dockerfile
+      platform: linux/amd64
+    image: screenshot-service:latest
+    container_name: screenshot-service
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+      - DEBUG=false
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python3", "healthcheck.py"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+    security_opt:
+      - no-new-privileges:true
+    shm_size: 1gb
+    networks:
+      - chromium-network
+    depends_on:
+      - chromium-base
+
+  # PDF 生成服务
+  pdf-generator:
+    build: 
+      context: ./examples/pdf-generator
+      dockerfile: Dockerfile
+      platform: linux/amd64
+    image: pdf-generator:latest
+    container_name: pdf-generator
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "healthcheck.js"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          memory: 1.5G
+          cpus: '1.0'
+        reservations:
+          memory: 512M
+          cpus: '0.5'
+    security_opt:
+      - no-new-privileges:true
+    shm_size: 2gb
+    networks:
+      - chromium-network
+    depends_on:
+      - chromium-base
+
+  # IPv6 监控服务
+  ipv6-monitor:
+    build: 
+      context: ./examples/ipv6-monitor
+      dockerfile: Dockerfile
+      platform: linux/amd64
+    image: ipv6-monitor:latest
+    container_name: ipv6-monitor
+    ports:
+      - "3002:3002"
+    environment:
+      - NODE_ENV=production
+      - PORT=3002
+      - ROUTER_IP=${ROUTER_IP:-192.168.1.1}
+      - ROUTER_USERNAME=${ROUTER_USERNAME:-admin}
+      - ROUTER_PASSWORD=${ROUTER_PASSWORD:-admin123}
+      - ROUTER_TYPE=${ROUTER_TYPE:-xiaomi}
+      - WEB_USERNAME=${WEB_USERNAME:-admin}
+      - WEB_PASSWORD=${WEB_PASSWORD:-admin123}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "healthcheck.js"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.0'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+    security_opt:
+      - no-new-privileges:true
+    shm_size: 1gb
+    # 使用 host 网络模式以便访问路由器
+    network_mode: "host"
+    volumes:
+      - ipv6-data:/app/data
+      - ipv6-logs:/app/logs
+    depends_on:
+      - chromium-base
+    profiles:
+      - ipv6-monitor
+
+  # 基础镜像（仅用于构建依赖）
+  chromium-base:
+    build: 
+      context: ./base-images
+      dockerfile: Dockerfile
+      platform: linux/amd64
+    image: chromium-base:latest
+    container_name: chromium-base-build
+    command: ["chromium-headless", "--version"]
+    restart: "no"
+    networks:
+      - chromium-network
+
+  # Nginx 反向代理（可选）
+  nginx-proxy:
+    image: nginx:alpine
+    container_name: chromium-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    restart: unless-stopped
+    networks:
+      - chromium-network
+    depends_on:
+      - puppeteer-api
+      - screenshot-service
+      - pdf-generator
+    profiles:
+      - proxy
+
+networks:
+  chromium-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+volumes:
+  chromium-data:
+    driver: local
+  ipv6-data:
+    driver: local
+    labels:
+      - "service=ipv6-monitor"
+      - "type=data"
+  ipv6-logs:
+    driver: local
+    labels:
+      - "service=ipv6-monitor"
+      - "type=logs"

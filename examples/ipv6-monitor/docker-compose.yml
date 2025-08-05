@@ -1,0 +1,74 @@
+version: '3.8'
+
+services:
+  ipv6-monitor:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    image: ipv6-monitor-chromium:latest
+    container_name: ipv6-monitor
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      # 路由器配置（请根据实际情况修改）
+      - ROUTER_IP=192.168.3.1
+      - ROUTER_PASSWORD=admin
+    restart: unless-stopped
+    
+    # 网络设置（启用 IPv6）
+    networks:
+      ipv6-monitor-network:
+        ipv4_address: 172.20.0.10
+    
+    # 健康检查
+    healthcheck:
+      test: ["CMD", "node", "healthcheck.js"]
+      interval: 60s
+      timeout: 15s
+      retries: 3
+      start_period: 30s
+    
+    # 资源限制
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.0'
+        reservations:
+          memory: 256M
+          cpus: '0.3'
+    
+    # 安全设置
+    security_opt:
+      - no-new-privileges:true
+    
+    # 共享内存设置（提高 Chromium 性能）
+    shm_size: 1gb
+    
+    # 特权设置（网络诊断需要）
+    cap_add:
+      - NET_RAW
+      - NET_ADMIN
+    
+    # 日志配置
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  ipv6-monitor-network:
+    driver: bridge
+    enable_ipv6: true
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+        - subnet: 2001:db8::/64
+
+# 可选：数据卷（用于持久化日志和配置）
+volumes:
+  monitor-logs:
+    driver: local

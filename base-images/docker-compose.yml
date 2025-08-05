@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  chromium-base:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+      platform: linux/amd64
+    image: chromium-base:latest
+    container_name: chromium-base-test
+    environment:
+      - DISPLAY=:99
+    # 仅用于测试基础镜像
+    command: ["chromium-headless", "--version"]
+    restart: "no"
+
+networks:
+  default:
+    name: chromium-network

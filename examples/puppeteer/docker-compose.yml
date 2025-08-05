@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  puppeteer-api:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+      platform: linux/amd64
+    image: puppeteer-chromium:latest
+    container_name: puppeteer-api
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "healthcheck.js"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    # 资源限制
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.0'
+        reservations:
+          memory: 512M
+          cpus: '0.5'
+    # 安全设置
+    security_opt:
+      - no-new-privileges:true
+    # 共享内存设置（提高 Chromium 性能）
+    shm_size: 2gb
+    networks:
+      - puppeteer-network
+
+networks:
+  puppeteer-network:
+    driver: bridge

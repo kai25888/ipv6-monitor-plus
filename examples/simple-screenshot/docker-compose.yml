@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  screenshot-service:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+      platform: linux/amd64
+    image: screenshot-service:latest
+    container_name: screenshot-service
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+      - DEBUG=false
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python3", "healthcheck.py"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    # 资源限制
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+    # 安全设置
+    security_opt:
+      - no-new-privileges:true
+    # 共享内存设置
+    shm_size: 1gb
+    networks:
+      - screenshot-network
+
+networks:
+  screenshot-network:
+    driver: bridge

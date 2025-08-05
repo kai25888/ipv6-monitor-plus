@@ -1,0 +1,44 @@
+{
+  "name": "router-manager-service",
+  "version": "1.0.0",
+  "description": "路由器管理工具：基于 chromium-base 镜像的路由器远程控制服务",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "test": "node test.js",
+    "cli": "node cli.js"
+  },
+  "keywords": [
+    "router",
+    "management",
+    "automation",
+    "xiaomi",
+    "huawei",
+    "puppeteer",
+    "chromium",
+    "docker"
+  ],
+  "author": "Docker Chromium Base",
+  "license": "MIT",
+  "dependencies": {
+    "puppeteer": "^21.5.2",
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "helmet": "^7.1.0",
+    "dotenv": "^16.3.1",
+    "express-rate-limit": "^7.1.5",
+    "multer": "^1.4.5-lts.1",
+    "commander": "^11.1.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "bin": {
+    "router-cli": "./cli.js"
+  }
+}
