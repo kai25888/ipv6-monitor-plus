@@ -1,7 +1,7 @@
 # IPv6 Monitor 示例镜像
 # 继承自精简的 Chromium 基础镜像
 
-FROM chromium-base:latest
+FROM chromium-base:silent
 
 # 切换到 root 用户进行软件安装
 USER root
@@ -29,11 +29,14 @@ WORKDIR /app
 COPY package*.json ./
 
 # 安装 Node.js 依赖
-RUN npm ci --only=production \
+RUN npm install --omit=dev \
     && npm cache clean --force
 
 # 复制应用代码
 COPY . .
+
+# 创建截图目录
+RUN mkdir -p /app/screenshots /app/logs
 
 # 确保应用目录属于 chromium 用户
 RUN chown -R chromium:chromium /app
@@ -46,7 +49,7 @@ HEALTHCHECK --interval=60s --timeout=15s --start-period=10s --retries=3 \
     CMD node healthcheck.js || exit 1
 
 # 暴露端口
-EXPOSE 3000
+EXPOSE 3003
 
 # 启动应用
 CMD ["node", "server.js"]

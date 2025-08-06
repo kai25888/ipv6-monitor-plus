@@ -21,7 +21,7 @@
 # 设置路由器登录信息
 export ROUTER_IP=192.168.3.1
 export ROUTER_PASSWORD=your_router_password
-export PORT=3000
+export PORT=3003
 ```
 
 ### 2. 构建和运行
@@ -54,13 +54,13 @@ docker-compose logs -f ipv6-monitor
 
 ```bash
 # 检查服务状态
-curl http://localhost:3000/status
+curl http://localhost:3003/status
 
 # 手动检测 IPv6
-curl -X POST http://localhost:3000/check
+curl -X POST http://localhost:3003/check
 
 # 手动重启 IPv6 模块
-curl -X POST http://localhost:3000/restart
+curl -X POST http://localhost:3003/restart
 ```
 
 ## 配置说明
@@ -71,13 +71,14 @@ curl -X POST http://localhost:3000/restart
 |--------|--------|------|
 | `ROUTER_IP` | `192.168.3.1` | 路由器 IP 地址 |
 | `ROUTER_PASSWORD` | `admin` | 路由器管理密码 |
-| `PORT` | `3000` | 服务监听端口 |
+| `PORT` | `3003` | 服务监听端口 |
 
 ### 监控配置
 
 - **检测间隔**: 30 分钟
 - **重启冷却**: 5 分钟
 - **超时设置**: 10 秒（IPv6 检测）
+- **检测地址**: `https://6.ipw.cn`（IPv6 专用测试网站）
 
 ## 注意事项
 
