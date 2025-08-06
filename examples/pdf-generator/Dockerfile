@@ -1,7 +1,7 @@
 # PDF 生成服务
 # 继承自精简的 Chromium 基础镜像
 
-FROM chromium-base:latest
+FROM chromium-base:fast
 
 # 切换到 root 用户进行软件安装
 USER root

@@ -1,0 +1,23 @@
+# IPv6 Monitor - Git忽略文件
+
+# 调试和临时文件
+*.log
+*.tmp
+*.bak
+*.orig
+*~
+.DS_Store
+
+# 运行时生成的文件
+screenshots/*.png
+screenshots/*.jpg
+logs/
+data/
+
+# 环境变量文件
+.env
+.env.local
+
+# 编辑器临时文件
+.idea/
+.vscode/
